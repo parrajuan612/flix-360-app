@@ -11,6 +11,14 @@ object RetrofitClient {
 
     private const val BASE_URL = "http://127.0.0.1:8590/api/v1/"
 
+    // Mutable provider to be attached from app layer (e.g., MainActivity/Application)
+    @Volatile
+    private var tokenProvider: (() -> String?) = { null }
+
+    fun attachSessionManager(sessionManager: SessionManager) {
+        tokenProvider = { sessionManager.getToken() }
+    }
+
     private val logging: HttpLoggingInterceptor by lazy {
         HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -19,6 +27,7 @@ object RetrofitClient {
 
     private val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
+            .addInterceptor(AuthInterceptor { tokenProvider.invoke() })
             .addInterceptor(logging)
             .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)

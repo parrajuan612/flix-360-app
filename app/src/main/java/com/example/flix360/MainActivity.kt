@@ -24,6 +24,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         session = SessionManager(this)
+        // Attach token provider to Retrofit so every call adds Authorization header
+        RetrofitClient.attachSessionManager(session)
 
         // Restaurar sesión si existe
         if (session.isSessionValid()) {

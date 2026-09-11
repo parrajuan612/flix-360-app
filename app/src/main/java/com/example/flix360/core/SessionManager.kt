@@ -25,8 +25,15 @@ class SessionManager(context: Context) {
 
     fun isSessionValid(): Boolean = !getToken().isNullOrBlank()
 
+    fun saveActiveLocationId(id: String) {
+        prefs.edit().putString(KEY_ACTIVE_LOCATION, id).apply()
+    }
+
+    fun getActiveLocationId(): String? = prefs.getString(KEY_ACTIVE_LOCATION, null)
+
     companion object {
         private const val PREFS_NAME = "flix360.secure.session"
         private const val KEY_TOKEN = "jwt_token"
+        private const val KEY_ACTIVE_LOCATION = "active_location_id"
     }
 }
