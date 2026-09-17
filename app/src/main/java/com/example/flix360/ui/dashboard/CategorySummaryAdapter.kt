@@ -18,6 +18,7 @@ class CategorySummaryAdapter : RecyclerView.Adapter<CategorySummaryAdapter.VH>()
         items.addAll(list)
         notifyDataSetChanged()
     }
+    fun submitList(list: List<CategorySummary>) = submit(list)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val binding = ItemCategorySummaryBinding.inflate(LayoutInflater.from(parent.context), parent, false)

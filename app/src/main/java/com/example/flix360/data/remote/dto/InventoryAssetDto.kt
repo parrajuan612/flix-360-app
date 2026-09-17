@@ -8,6 +8,7 @@ data class InventoryAssetDto(
     @SerializedName("product_id") val productId: String,
     @SerializedName("rfid_tag_id") val rfidTagId: String?,
     @SerializedName("location_id") val locationId: String?,
+    @SerializedName("epc") val epc: String? = null,
     val quantity: Double,
     @SerializedName("inventory_mode") val inventoryMode: String,
     val status: String

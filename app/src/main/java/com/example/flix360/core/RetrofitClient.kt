@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
+    // Nota la inclusión de "api/v1/" y la barra diagonal "/" al final
     private const val BASE_URL = "http://127.0.0.1:8590/api/v1/"
 
     // Mutable provider to be attached from app layer (e.g., MainActivity/Application)

@@ -16,21 +16,32 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Flix360">
 
+        <!-- Tu pantalla principal (Dashboard) configurada para iniciar primero -->
         <activity
-            android:name=".ui.dashboard.DashboardActivity"
-            android:exported="false"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="adjustResize" />
-
-        <activity
-            android:name=".MainActivity"
+            android:name="com.example.flix360.ui.dashboard.DashboardActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Pantalla del Escáner -->
+        <activity
+            android:name=".ui.scanner.ScannerActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize"/>
+
+        <!-- Pantalla de Auditoría -->
+        <activity
+            android:name=".ui.audit.AuditActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize"/>
+
     </application>
 
 </manifest>

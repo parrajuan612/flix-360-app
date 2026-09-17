@@ -13,4 +13,16 @@ interface FlixApiService {
 
     @GET("inventory-assets")
     suspend fun getInventoryAssets(@Query("location_id") locationId: String?): Response<PaginatedResponse<InventoryAssetDto>>
+
+    @GET("products")
+    suspend fun getProducts(): Response<PaginatedResponse<ProductDto>>
+
+    @GET("categories")
+    suspend fun getCategories(): Response<PaginatedResponse<CategoryDto>>
+
+    @POST("rfid-tags")
+    suspend fun createRfidTag(@Body body: RfidTagRequest): Response<RfidTagDto>
+
+    @POST("inventory-assets")
+    suspend fun createInventoryAsset(@Body body: AssetRequest): Response<InventoryAssetDto>
 }

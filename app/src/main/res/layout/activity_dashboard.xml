@@ -197,7 +197,7 @@
                 android:id="@+id/stockNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1.400 u."
+                android:text="—"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
                 android:textSize="36sp"
@@ -245,7 +245,7 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/btnScan"
+            android:id="@+id/btnNavCapture"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:gravity="center"
@@ -256,6 +256,7 @@
             android:background="@drawable/bg_scan_button"/>
 
         <LinearLayout
+            android:id="@+id/btnNavAudit"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

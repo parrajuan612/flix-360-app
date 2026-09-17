@@ -9,12 +9,16 @@ import androidx.lifecycle.lifecycleScope
 import com.example.flix360.core.RetrofitClient
 import com.example.flix360.core.SessionManager
 import com.example.flix360.data.remote.dto.InventoryAssetDto
+import com.example.flix360.data.remote.dto.ProductDto
+import com.example.flix360.data.remote.dto.CategoryDto
 import com.example.flix360.data.remote.dto.LocationDto
 import com.example.flix360.databinding.ActivityDashboardBinding
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.async
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -22,6 +26,7 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var session: SessionManager
 
     private var locations: List<LocationDto> = emptyList()
+    private val summaryAdapter = CategorySummaryAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +36,22 @@ class DashboardActivity : AppCompatActivity() {
         session = SessionManager(this)
         RetrofitClient.attachSessionManager(session)
 
+        // RecyclerView setup
+        if (binding.rvInventorySummary.layoutManager == null) {
+            binding.rvInventorySummary.layoutManager = GridLayoutManager(this, 2)
+        }
+        binding.rvInventorySummary.adapter = summaryAdapter
+
         fetchLocations()
+
+        // Captura (botón central)
+        binding.btnNavCapture.setOnClickListener {
+            startActivity(android.content.Intent(this, com.example.flix360.ui.scanner.ScannerActivity::class.java))
+        }
+        // Auditoría (botón derecho)
+        binding.btnNavAudit.setOnClickListener {
+            startActivity(android.content.Intent(this, com.example.flix360.ui.audit.AuditActivity::class.java))
+        }
     }
 
     private fun fetchLocations() {
@@ -84,13 +104,36 @@ class DashboardActivity : AppCompatActivity() {
     private fun fetchInventoryForLocation(locationId: String) {
         lifecycleScope.launch {
             try {
-                val resp = withContext(Dispatchers.IO) { RetrofitClient.api.getInventoryAssets(locationId) }
-                if (resp.isSuccessful) {
-                    val items: List<InventoryAssetDto> = resp.body()?.data.orEmpty()
-                    val total = items.sumOf { it.quantity }
+                val api = RetrofitClient.api
+                val assetsDeferred = async(Dispatchers.IO) { api.getInventoryAssets(locationId) }
+                val productsDeferred = async(Dispatchers.IO) { api.getProducts() }
+                val categoriesDeferred = async(Dispatchers.IO) { api.getCategories() }
+
+                val assetsResp = assetsDeferred.await()
+                val productsResp = productsDeferred.await()
+                val categoriesResp = categoriesDeferred.await()
+
+                if (assetsResp.isSuccessful) {
+                    val assets: List<InventoryAssetDto> = assetsResp.body()?.data.orEmpty()
+                    val total = assets.sumOf { it.quantity }
                     binding.stockNumber.text = java.text.NumberFormat.getNumberInstance(java.util.Locale.getDefault()).format(total) + " u."
+
+                    val products: Map<String, ProductDto> = if (productsResp.isSuccessful)
+                        productsResp.body()?.data.orEmpty().associateBy { it.id } else emptyMap<String, ProductDto>()
+                    val categories: Map<String, CategoryDto> = if (categoriesResp.isSuccessful)
+                        categoriesResp.body()?.data.orEmpty().associateBy { it.id } else emptyMap<String, CategoryDto>()
+
+                    // Agrupar por nombre de categoría
+                    val grouped: Map<String, Double> = assets.groupBy { asset ->
+                        val product = asset.productId.let { products[it] }
+                        val catName = product?.categoryId?.let { categories[it]?.name }
+                        catName ?: "SIN CATEGORÍA"
+                    }.mapValues { (_, list) -> list.sumOf { it.quantity } }
+
+                    val summaries = grouped.entries.map { (name, qty) -> CategorySummary(name, qty) }
+                    summaryAdapter.submit(summaries)
                 } else {
-                    Toast.makeText(this@DashboardActivity, "Fallo cargando stock (${resp.code()})", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@DashboardActivity, "Fallo cargando stock (${assetsResp.code()})", Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(this@DashboardActivity, "Modo Offline: Mostrando últimos datos conocidos", Toast.LENGTH_LONG).show()
